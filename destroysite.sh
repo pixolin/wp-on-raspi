@@ -17,7 +17,7 @@ DIR=/var/www/${SITE}
 
 
 # Execute as root, only
-if [ "$(whoami)" != 'root' ]; then
+if [[ "$(whoami)" != 'root' ]]; then
 echo "You have to execute this script as root user. Aborting script."
 exit 1;
 fi
@@ -30,8 +30,8 @@ fi
 
 
 # Delete MySQL-Database
-if [ $SITE == 'wp.test' ]; then
-  sudo -u www-data wp db reset --path=${DIR}
+if [[ $SITE == 'wp.test' ]]; then
+  sudo -u www-data wp db reset --yes --path=${DIR}
 else
   sudo -u www-data wp db drop --yes --path=${DIR}
 fi

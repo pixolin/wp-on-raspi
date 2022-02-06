@@ -16,14 +16,14 @@ SITE=${1,,} # wp.test
 NAME=${SITE%.*} # wp
 DIR=/var/www/${SITE}
 
-if [ $SITE == 'wp.test' ]; then
+if [[ "$SITE" == 'wp.test' ]]; then
   DATABASE='wordpress'
 else
   DATABASE="wp_${NAME}"
 fi
 
 # Execute as root, only
-if [ "$(whoami)" != 'root' ]; then
+if [[ "$(whoami)" != 'root' ]]; then
 echo "You have to execute this script as root user. Aborting script."
 exit 1;
 fi
@@ -35,7 +35,7 @@ if [[ $# -eq 0 ]] ; then
 fi
 
 # Exit, if directory already exists
-if [ -d "${DIR}" ]; then
+if [[ -d "${DIR}" ]]; then
   # Take action if $DIR exists. #
   echo "Directory ${DIR} already exist. Aborting script."
   exit 0
@@ -83,6 +83,30 @@ systemctl restart apache2.service
 # Install WordPress
 cd ${DIR}
 
+echo "<IfModule mod_deflate.c>
+  # compress text, html, javascript, css, xml:
+  AddOutputFilterByType DEFLATE text/plain
+  AddOutputFilterByType DEFLATE text/html
+  AddOutputFilterByType DEFLATE text/xml
+  AddOutputFilterByType DEFLATE text/css
+  AddOutputFilterByType DEFLATE application/xml
+  AddOutputFilterByType DEFLATE application/xhtml+xml
+  AddOutputFilterByType DEFLATE application/rss+xml
+  AddOutputFilterByType DEFLATE application/javascript
+  AddOutputFilterByType DEFLATE application/x-javascript
+  AddOutputFilterByType DEFLATE image/x-icon
+</IfModule>
+
+<IfModule mod_expires.c>
+ExpiresActive on
+ExpiresByType image/gif \"access plus 1 months\"
+ExpiresByType image/jpeg \"access plus 1 months\"
+ExpiresByType image/png \"access plus 1 months\"
+ExpiresByType application/x-font-woff \"access plus 1 months\"
+ExpiresByType application/javascript \"access plus 1 months\"
+ExpiresByType text/css \"access plus 1 months\"
+</IfModule>" > ${DIR}/.htaccess
+
 # Download WordPress, German locale
 sudo -u www-data wp core download --locale=de_DE
 
@@ -92,10 +116,13 @@ sudo -u www-data wp config create --dbname=${DATABASE} --dbuser=wordpress --dbpa
 PHP
 
 # Create MySQL database
+if [[ $DATABASE != 'wordpress' ]]; then
 sudo -u www-data wp db create
+fi
 
 # Install WordPress
 sudo -u www-data wp core install --title=${NAME} --url=https://${SITE} --admin_user=admin --admin_password=password --admin_email=wp@${SITE} --skip-email
+sudo -u www-data wp option update permalink_structure '/%postname%'
 
 d=`date "+%d.%m.%Y"`
 t=`date "+%H:%M"`
