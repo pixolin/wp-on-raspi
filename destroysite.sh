@@ -15,11 +15,6 @@ SITE=${1,,} # wp.test
 NAME=${SITE%.*} # wp
 DIR=/var/www/${SITE}
 
-if [ $SITE == 'wp.test' ]; then
-  DATABASE='wordpress'
-else
-  DATABASE='wp_${NAME}'
-fi
 
 # Execute as root, only
 if [ "$(whoami)" != 'root' ]; then
@@ -32,6 +27,15 @@ if [[ $# -eq 0 ]] ; then
 	echo 'No sitename provided. Aborting script.'
 	exit 0
 fi
+
+
+# Delete MySQL-Database
+if [ $SITE == 'wp.test' ]; then
+  sudo -u www-data wp db reset --path=${DIR}
+else
+  sudo -u www-data wp db drop --yes --path=${DIR}
+fi
+
 
 # Check if website directory exists
 if [[ ! -d "$DIR" ]]; then
@@ -59,8 +63,5 @@ rm /etc/apache2/sites-available/${SITE}.conf
 rm /etc/apache2/sites-available/${SITE}.ssl.conf
 systemctl restart apache2.service
 echo Restarting Apache2 server.
-
-# Delete MySQL-Database
-echo "DROP DATABASE \`${DATABASE}\`" | mysql -uroot -proot
 
 echo "Site ${SITE} destroyed. Create something new. 🪴"

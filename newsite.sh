@@ -19,7 +19,7 @@ DIR=/var/www/${SITE}
 if [ $SITE == 'wp.test' ]; then
   DATABASE='wordpress'
 else
-  DATABASE='wp_${NAME}'
+  DATABASE="wp_${NAME}"
 fi
 
 # Execute as root, only
@@ -80,9 +80,6 @@ a2ensite ${SITE}.ssl
 
 systemctl restart apache2.service
 
-# Create MySQL-Database
-echo "CREATE DATABASE \`wp_${NAME}\`" | mysql -uroot -proot
-
 # Install WordPress
 cd ${DIR}
 
@@ -93,6 +90,9 @@ sudo -u www-data wp core download --locale=de_DE
 sudo -u www-data wp config create --dbname=${DATABASE} --dbuser=wordpress --dbpass=wordpress --extra-php <<PHP
   define( 'WP_ENVIRONMENT_TYPE', 'development' );
 PHP
+
+# Create MySQL database
+sudo -u www-data wp db create
 
 # Install WordPress
 sudo -u www-data wp core install --title=${NAME} --url=https://${SITE} --admin_user=admin --admin_password=password --admin_email=wp@${SITE} --skip-email
