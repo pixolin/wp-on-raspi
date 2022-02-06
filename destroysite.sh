@@ -46,22 +46,22 @@ fi
 
 # Delete the directory
 rm -rf ${DIR}
-echo Deleted director ${SITE}
+echo "Deleted directory ${SITE}"
 
 # Delete selfsigned SSL certificates
 rm /etc/ssl/certs/${SITE}.pem
 rm /etc/ssl/private/${SITE}.key
-echo Deleted SSL certificates
+echo "Deleted SSL certificates"
 
 # Disable virtual hosts and restart server
 a2dissite ${SITE}
 a2dissite ${SITE}.ssl
-echo Virtual hosts disabled
+echo "Virtual hosts disabled"
 
 # Delete virtual hosts
 rm /etc/apache2/sites-available/${SITE}.conf
 rm /etc/apache2/sites-available/${SITE}.ssl.conf
 systemctl restart apache2.service
-echo Restarting Apache2 server.
+echo "Restarting Apache2 server."
 
 echo "Site ${SITE} destroyed. Create something new. 🪴"
