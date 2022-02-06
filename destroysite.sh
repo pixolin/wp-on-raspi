@@ -16,13 +16,13 @@ DIR=/var/www/${SITE}
 
 # Execute as root, only
 if [ "$(whoami)" != 'root' ]; then
-echo "You have to execute this script as root user"
+echo "You have to execute this script as root user. Aborting script."
 exit 1;
 fi
 
 # Exit, if no site name was provided
 if [[ $# -eq 0 ]] ; then
-	echo 'No sitename provided'
+	echo 'No sitename provided. Aborting script.'
 	exit 0
 fi
 
