@@ -11,9 +11,16 @@ creates MySQL database,
 downloads and installs WordPress
 '
 
-
-SITE=$1.test
+# Variables
+SITE=${1,,} # wp.test
+NAME=${SITE%.*} # wp
 DIR=/var/www/${SITE}
+
+if [ $SITE == 'wp.test' ]; then
+  DATABASE='wordpress'
+else
+  DATABASE='wp_${NAME}'
+fi
 
 # Execute as root, only
 if [ "$(whoami)" != 'root' ]; then
@@ -28,7 +35,7 @@ if [[ $# -eq 0 ]] ; then
 fi
 
 # Exit, if directory already exists
-if [ -d "$DIR" ]; then
+if [ -d "${DIR}" ]; then
   # Take action if $DIR exists. #
   echo "Directory ${DIR} already exist. Aborting script."
   exit 0
@@ -74,7 +81,7 @@ a2ensite ${SITE}.ssl
 systemctl restart apache2.service
 
 # Create MySQL-Database
-echo "CREATE DATABASE \`wp_$1\`" | mysql -uroot -proot
+echo "CREATE DATABASE \`wp_${NAME}\`" | mysql -uroot -proot
 
 # Install WordPress
 cd ${DIR}
@@ -83,14 +90,15 @@ cd ${DIR}
 sudo -u www-data wp core download --locale=de_DE
 
 # Create WordPress configuration file
-sudo -u www-data wp config create --dbname=wp_$1 --dbuser=wordpress --dbpass=wordpress --extra-php <<PHP
+sudo -u www-data wp config create --dbname=${DATABASE} --dbuser=wordpress --dbpass=wordpress --extra-php <<PHP
   define( 'WP_ENVIRONMENT_TYPE', 'development' );
 PHP
 
 # Install WordPress
-sudo -u www-data wp core install --title=$1 --url=https://${SITE} --admin_user=admin --admin_password=password --admin_email=wp@${SITE} --skip-email
+sudo -u www-data wp core install --title=${NAME} --url=https://${SITE} --admin_user=admin --admin_password=password --admin_email=wp@${SITE} --skip-email
 
-d=`date +%d.%m.%Y %H:%M`
-echo $d > created
+d=`date "+%d.%m.%Y"`
+t=`date "+%H:%M"`
+echo "Website ${SITE} created on ${d} at ${t}" > created
 
 echo "That's it! Have a great day. 🌻"

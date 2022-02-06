@@ -10,9 +10,16 @@ restarts server,
 drops MySQL database.
 '
 
-
-SITE=$1.test
+# Variables
+SITE=${1,,} # wp.test
+NAME=${SITE%.*} # wp
 DIR=/var/www/${SITE}
+
+if [ $SITE == 'wp.test' ]; then
+  DATABASE='wordpress'
+else
+  DATABASE='wp_${NAME}'
+fi
 
 # Execute as root, only
 if [ "$(whoami)" != 'root' ]; then
@@ -27,7 +34,7 @@ if [[ $# -eq 0 ]] ; then
 fi
 
 # Check if website directory exists
-if [! -d "$DIR" ]; then
+if [[ ! -d "$DIR" ]]; then
   # Take action if $DIR exists. #
   echo "Directory ${DIR} doesn't exist. Aborting script."
   exit 0
@@ -45,14 +52,15 @@ echo Deleted SSL certificates
 # Disable virtual hosts and restart server
 a2dissite ${SITE}
 a2dissite ${SITE}.ssl
-systemctl restart apache2.service
-echo Disabled virtual hosts
+echo Virtual hosts disabled
 
 # Delete virtual hosts
 rm /etc/apache2/sites-available/${SITE}.conf
 rm /etc/apache2/sites-available/${SITE}.ssl.conf
+systemctl restart apache2.service
+echo Restarting Apache2 server.
 
 # Delete MySQL-Database
-echo "DROP DATABASE \`wp_$1\`" | mysql -uroot -proot
+echo "DROP DATABASE \`${DATABASE}\`" | mysql -uroot -proot
 
 echo "Site ${SITE} destroyed. Create something new. 🪴"
