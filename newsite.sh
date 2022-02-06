@@ -3,10 +3,12 @@
 Creates a new wordpress site.
 
 Needs a site name,
-creates directory in /var/www,
+creates subdirectory in /var/www,
+creates SSL certificates,
 adds virtual host file,
 restarts server,
-creates database,
+creates MySQL database,
+downloads and installs WordPress
 '
 
 
@@ -28,14 +30,15 @@ fi
 # Exit, if directory already exists
 if [ -d "$DIR" ]; then
   # Take action if $DIR exists. #
-  echo "Directory ${DIR} already exits. Stopping script."
+  echo "Directory ${DIR} already exist. Aborting script."
   exit 0
-else
-  sudo mkdir -p ${DIR}
-  sudo chown www-data:www-data ${DIR}
-  sudo chmod 755 ${DIR}
-  echo "Successfully created directory ${DIR}"
 fi
+
+# Create directory
+  mkdir -p ${DIR}
+  chown www-data:www-data ${DIR}
+  chmod 755 ${DIR}
+  echo "Successfully created directory ${DIR}"
 
 # Create selfsigned SSL certificate
  mkcert \
@@ -43,6 +46,7 @@ fi
  -key-file /etc/ssl/private/${SITE}.key \
  ${SITE} "*.${SITE}"
 
+# Create virtual hosts and restart server
 echo "<VirtualHost *:80>
     ServerAdmin wp@${SITE}
     ServerName ${SITE}
@@ -64,23 +68,15 @@ echo "<VirtualHost *:443>
     CustomLog ${APACHE_LOG_DIR}/access.log combined
 </VirtualHost>" > /etc/apache2/sites-available/${SITE}.ssl.conf
 
-if ! echo -e /etc/apache2/sites-available/${SITE}.conf; then
-echo "I have a problem to create the virtual host."
-else
-  echo "Virtual host created !"
-fi
+a2ensite ${SITE}
+a2ensite ${SITE}.ssl
 
-if ! echo -e /etc/apache2/sites-available/${SITE}.ssl.conf; then
-echo "I have a problem to create the virtual host (SSL)."
-else
-  echo "Virtual host (SSL) created !"
-fi
+systemctl restart apache2.service
 
-sudo a2ensite ${SITE}
-sudo a2ensite ${SITE}.ssl
-
+# Create MySQL-Database
 echo "CREATE DATABASE \`wp_$1\`" | mysql -uroot -proot
 
+# Install WordPress
 cd ${DIR}
 
 # Download WordPress, German locale
@@ -93,5 +89,8 @@ PHP
 
 # Install WordPress
 sudo -u www-data wp core install --title=$1 --url=https://${SITE} --admin_user=admin --admin_password=password --admin_email=wp@${SITE} --skip-email
+
+d=`date +%d.%m.%Y %H:%M`
+echo $d > created
 
 echo "That's it! Have a great day. 🌻"
