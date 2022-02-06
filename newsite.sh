@@ -127,5 +127,9 @@ sudo -u www-data wp option update permalink_structure '/%postname%'
 d=`date "+%d.%m.%Y"`
 t=`date "+%H:%M"`
 echo "Website ${SITE} created on ${d} at ${t}" > created
+echo Zeitstempel gesetzt.
+
+sudo -R chown www-data www-data ${DIR}
+echo Alle Dateien dem Benutzer www-data zugewiesen.
 
 echo "That's it! Have a great day. 🌻"
