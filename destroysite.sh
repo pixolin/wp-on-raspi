@@ -62,6 +62,6 @@ echo "Virtual hosts disabled"
 rm /etc/apache2/sites-available/${SITE}.conf
 rm /etc/apache2/sites-available/${SITE}.ssl.conf
 systemctl restart apache2.service
-echo "Restarting Apache2 server."
+echo "Restarted Apache2 server."
 
 echo "Site ${SITE} destroyed. Create something new. 🪴"

@@ -151,35 +151,37 @@ function main() {
   pages=(
     Startseite
     Blog
-  }
+  )
   for i in "${pages[@]}"
   do
     menuitem=$($wwwp post create \
       --post_author=admin \
-      --post_tite="$i" \
+      --post_titel="$i" \
       --post_status=publish \
       --post_type=page \
       --comment_status=closed \
       --porcelain)
     $wwwp menu item add-post main $menuitem
   done
+
   echo "Created some web pages and added them to nav menu."
 }
 main
 
 # Add imprint and create nav menu item for legal menu
-$wwwp wp menu item app-post legal $($wwwp wp post create \
+$wwwp menu item add-post legal $($wwwp post create \
   --post_author=admin \
   --post_title="Impressum" \
   --post_status=publish \
   --post_type=page \
   --comment_status=closed \
   --porcelain)
+
 echo "Create imprint page and added it to legal menu."
 
 # Install and activate some frequently use plugins.
 plugins="code-snippets customizer-search display-environment-type flying-pages"
-$wwwp wp plugin install --activate $plugins
+$wwwp plugin install --activate $plugins
 
 d=`date "+%d.%m.%Y"`
 t=`date "+%H:%M"`
