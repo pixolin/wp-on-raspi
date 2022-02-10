@@ -1,8 +1,14 @@
 #! /bin/bash
 : '
-Creates a new wordpress site.
+Creates a new wordpress site
+in a local test environment.
 
-Needs a site name,
+----
+DON`T USE ON PUBLIC SERVER!
+----
+
+Checks if run by user root,
+needs a site name,
 creates subdirectory in /var/www,
 creates SSL certificates,
 adds virtual host file,
@@ -16,6 +22,9 @@ SITE=${1,,} # wp.test
 NAME=${SITE%.*} # wp
 DIR=/var/www/${SITE}
 
+# Use database `wordpress` for `wp.test`
+# and `wp_...` for everything else.
+# DB user `wordpress` has permission for all.
 if [[ "$SITE" == 'wp.test' ]]; then
   DATABASE='wordpress'
 else
@@ -83,6 +92,7 @@ systemctl restart apache2.service
 # Install WordPress
 cd ${DIR}
 
+# Add rules to `.htaccess`.
 echo "<IfModule mod_deflate.c>
   # compress text, html, javascript, css, xml:
   AddOutputFilterByType DEFLATE text/plain
@@ -127,9 +137,9 @@ sudo -u www-data wp option update permalink_structure '/%postname%'
 d=`date "+%d.%m.%Y"`
 t=`date "+%H:%M"`
 echo "Website ${SITE} created on ${d} at ${t}" > created
-echo Zeitstempel gesetzt.
+echo "Added timestamp to WordPress installation."
 
 sudo -R chown www-data www-data ${DIR}
-echo Alle Dateien dem Benutzer www-data zugewiesen.
+echo "Changed owner of all files to www-data:www-data."
 
 echo "That's it! Have a great day. 🌻"
