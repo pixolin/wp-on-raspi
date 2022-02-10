@@ -20,7 +20,8 @@ downloads and installs WordPress
 # Variables
 SITE=${1,,} # wp.test
 NAME=${SITE%.*} # wp
-DIR=/var/www/${SITE}
+DIR=/var/www/${SITE} # /var/wp/wp.test
+wwwp="sudo -u www-data wp" # sudo -u www-data wp
 
 # Use database `wordpress` for `wp.test`
 # and `wp_...` for everything else.
@@ -118,21 +119,67 @@ ExpiresByType text/css \"access plus 1 months\"
 </IfModule>" > ${DIR}/.htaccess
 
 # Download WordPress, German locale
-sudo -u www-data wp core download --locale=de_DE
+$wwwp core download --locale=de_DE
 
 # Create WordPress configuration file
-sudo -u www-data wp config create --dbname=${DATABASE} --dbuser=wordpress --dbpass=wordpress --extra-php <<PHP
+$wwwp config create --dbname=${DATABASE} --dbuser=wordpress --dbpass=wordpress --extra-php <<PHP
   define( 'WP_ENVIRONMENT_TYPE', 'development' );
 PHP
 
 # Create MySQL database
 if [[ $DATABASE != 'wordpress' ]]; then
-sudo -u www-data wp db create
+$wwwp db create
 fi
 
 # Install WordPress
-sudo -u www-data wp core install --title=${NAME} --url=https://${SITE} --admin_user=admin --admin_password=password --admin_email=wp@${SITE} --skip-email
-sudo -u www-data wp option update permalink_structure '/%postname%'
+$wwwp core install --title=${NAME} --url=https://${SITE} --admin_user=admin --admin_password=password --admin_email=wp@${SITE} --skip-email
+$wwwp option update permalink_structure '/%postname%'
+
+# Add some settings to localize
+$wwwp option update blogdescription "WordPress Testumgebung"
+$wwwp option update timezone_string "Europe/Berlin"
+$wwwp option update date_format "j. F Y"
+$wwwp option update time_format "G:i"
+$wwwp option update permalink_structure "/%postname%/"
+
+# Create two nav menus
+$wwwp menu create "Main"
+$wwwp menu create "Legal"
+
+# Add pages and create nav menu items for main menu
+function main() {
+  pages=(
+    Startseite
+    Blog
+  }
+  for i in "${pages[@]}"
+  do
+    menuitem=$($wwwp post create \
+      --post_author=admin \
+      --post_tite="$i" \
+      --post_status=publish \
+      --post_type=page \
+      --comment_status=closed \
+      --porcelain)
+    $wwwp menu item add-post main $menuitem
+  done
+  echo "Created some web pages and added them to nav menu."
+}
+main
+
+# Add imprint and create nav menu item for legal menu
+$wwwp wp menu item app-post legal $($wwwp wp post create \
+  --post_author=admin \
+  --post_title="Impressum" \
+  --post_status=publish \
+  --post_type=page \
+  --comment_status=closed \
+  --porcelain)
+echo "Create imprint page and added it to legal menu."
+
+# Install and activate some frequently use plugins.
+plugins="code-snippets customizer-search display-environment-type flying-pages"
+$wwwp wp plugin install --activate $plugins
 
 d=`date "+%d.%m.%Y"`
 t=`date "+%H:%M"`
