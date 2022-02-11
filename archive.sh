@@ -93,4 +93,4 @@ lz4 --rm ${TAR}
 # Change permissions of archive
 chmod 600 ${TAR}.lz4
 
-echo "✅ Compressed archive stored at /var/archive/${SITE}.tgz"
+echo "✅ Compressed archive stored at /var/archive/${SITE}.lz4"
