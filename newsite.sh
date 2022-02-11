@@ -122,6 +122,8 @@ ExpiresByType application/javascript \"access plus 1 months\"
 ExpiresByType text/css \"access plus 1 months\"
 </IfModule>" > ${DIR}/.htaccess
 
+chown www-data:www-data ${DIR}/.htaccess
+
 # Download WordPress, German locale
 $wwwp core download --locale=de_DE
 
