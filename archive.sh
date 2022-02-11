@@ -32,8 +32,9 @@ SITE=${1,,} # wp.test
 NAME=${SITE%.*} # wp
 DIR=/var/www/${SITE} # /var/wp/wp.test
 TMP=${DIR}/.tmp
+TAR=/var/archive/${SITE}.tar
 wwwp="sudo -u www-data wp"
-cwd=$(pwd)
+
 
 # Execute as root, only
 if [ "$(whoami)" != 'root' ]; then
@@ -64,7 +65,7 @@ $wwwp theme list --field=name --status=active --skip-update-check --path=${DIR} 
 $wwwp plugin list --field=name --status=active --skip-update-check --path=${DIR} > ${TMP}/wp-plugins.txt
 
 # Create archive from files in tmp-directory
-tar -C ${TMP} -cf /var/archive/${SITE}.tar \
+tar -C ${TMP} -cf ${TAR} \
   wp-database.sql \
   wp-plugins.txt \
   wp-theme.txt
@@ -73,21 +74,23 @@ tar -C ${TMP} -cf /var/archive/${SITE}.tar \
 rm -rf ${TMP}
 
 # Add `wp-config.php`, `.htaccess` and uploads-directory to archive
-tar -C ${DIR} -rf /var/archive/${SITE}.tar \
+tar -C ${DIR} -rf ${TAR} \
   wp-config.php \
   .htaccess \
   wp-content/uploads
 
 
 # Add SSL-Certificates and Virtual Hosts to archive
-tar -C /etc -rf /var/archive/${SITE}.tar \
+tar -C /etc -rf ${TAR} \
   ssl/certs/${SITE}.pem \
   ssl/private/${SITE}.key \
   apache2/sites-available/${SITE}.conf \
   apache2/sites-available/${SITE}.ssl.conf
 
- /var/archive/${SITE}.tar.lz4
+# Compress archive with lz4, remove original file
+lz4 --rm ${TAR}
 
-chmod 600 /var/archive/${SITlz4 /var/archive/${SITE}.tarE}.tar.lz4
+# Change permissions of archive
+chmod 600 ${TAR}.lz4
 
 echo "✅ Compressed archive stored at /var/archive/${SITE}.tgz"
