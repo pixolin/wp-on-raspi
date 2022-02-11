@@ -87,10 +87,10 @@ tar -C /etc -rf ${TAR} \
   apache2/sites-available/${SITE}.conf \
   apache2/sites-available/${SITE}.ssl.conf
 
-# Compress archive with lz4, remove original file
-lz4 --rm ${TAR}
+# Compress archive with gzip, remove original file
+gzip ${TAR}
 
 # Change permissions of archive
-chmod 600 ${TAR}.lz4
+chmod 600 ${TAR}.gz
 
-echo "✅ Compressed archive stored at /var/archive/${SITE}.lz4"
+echo "✅ Compressed archive stored at /var/archive/${SITE}.gz"
