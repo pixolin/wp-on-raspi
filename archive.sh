@@ -86,8 +86,8 @@ tar -C /etc -rf /var/archive/${SITE}.tar \
   apache2/sites-available/${SITE}.conf \
   apache2/sites-available/${SITE}.ssl.conf
 
-gzip /var/archive/${SITE}.tar
+ /var/archive/${SITE}.tar.lz4
 
-chmod 600 /var/archive/${SITE}.tar.gz
+chmod 600 /var/archive/${SITlz4 /var/archive/${SITE}.tarE}.tar.lz4
 
 echo "✅ Compressed archive stored at /var/archive/${SITE}.tgz"
