@@ -90,6 +90,10 @@ a2ensite ${SITE}.ssl
 
 systemctl restart apache2.service
 
+# Add domain to DNS list on pihole
+ssh pi@pihole "echo 192.168.178.99 ${SITE} >> /home/pi/.pihole/custom.list"
+echo "Added ${SITE} to local DNS server, takes 15 min."
+
 # Install WordPress
 cd ${DIR}
 
