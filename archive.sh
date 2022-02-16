@@ -45,13 +45,13 @@ fi
 # Exit, if no site name was provided
 if [[ -z "$1" ]] ; then
 	echo '❌ No sitename provided. Aborting script.'
-	exit 0
+	exit 1
 fi
 
 # Exit, if directory already exists
 if [[ ! -d "$DIR" ]]; then
   echo "❌ Directory ${DIR} doesn't exist. No website? Aborting script."
-  exit 0
+  exit 1
 fi
 
 # temporary hidden folder in website directory

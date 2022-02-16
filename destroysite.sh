@@ -25,7 +25,7 @@ fi
 # Exit, if no site name was provided
 if [[ -z "$1" ]] ; then
 	echo 'No sitename provided. Aborting script.'
-	exit 0
+	exit 1
 fi
 
 
@@ -41,7 +41,7 @@ fi
 if [[ ! -d "$DIR" ]]; then
   # Take action if $DIR exists. #
   echo "Directory ${DIR} doesn't exist. Aborting script."
-  exit 0
+  exit 1
 fi
 
 # Delete the directory
