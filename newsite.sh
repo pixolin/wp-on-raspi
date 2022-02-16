@@ -39,7 +39,7 @@ exit 1;
 fi
 
 # Exit, if no site name was provided
-if [[ $# -eq 0 ]] ; then
+if [[ -z "$1" ]] ; then
 	echo 'No sitename provided. Aborting script.'
 	exit 0
 fi
