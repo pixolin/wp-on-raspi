@@ -1,4 +1,5 @@
 #! /bin/bash
+#
 # Copyright (c) 2022 Bego Mario Garde
 # License: MIT
 # ----
@@ -18,19 +19,16 @@ set -e
 SITE=${1,,} # wp.test
 DIR=/var/www/"${SITE}"
 
-
 # Execute as root, only
-if [[ "$(whoami)" != 'root' ]];
-then
-echo You have to execute this script as root user. Aborting script.
-exit 1;
+if [[ "$(whoami)" != 'root' ]]; then
+  echo "You have to execute this script as root user. Aborting script."
+  exit 1
 fi
 
 # Exit, if no site name was provided
-if [[ -z "$1" ]] ;
-then
-	echo No sitename provided. Aborting script.
-	exit 1
+if [[ -z "$1" ]]; then
+  echo "No sitename provided. Aborting script."
+  exit 1
 fi
 
 # Check if website directory exists
@@ -41,15 +39,14 @@ if [[ ! -d "$DIR" ]]; then
 fi
 
 # Delete MySQL-Database
-if [[ $SITE == 'wp.test' ]];
-then
+if [[ $SITE == 'wp.test' ]]; then
   sudo -u www-data wp db reset --yes --path="${DIR}"
 else
   sudo -u www-data wp db drop --yes --path="${DIR}"
 fi
 
-# Delete the directory
-rm -rf "${DIR}"
+# Check if directory exists and delete the directory
+[[ -d "$DIR" ]] && rm -rf "${DIR}"
 echo "✅ Deleted directory ${SITE}"
 
 # Delete selfsigned SSL certificates
@@ -58,12 +55,14 @@ rm /etc/ssl/private/"${SITE}".key
 echo ✅ Deleted SSL certificates
 
 # Disable virtual hosts and restart server
-a2dissite "${SITE}" "${SITE}".ssl
+a2dissite "${SITE} ${SITE}.ssl"
 echo ✅ Virtual hosts disabled
 
 # Delete virtual hosts
-rm /etc/apache2/sites-available/"${SITE}".conf
-rm /etc/apache2/sites-available/"${SITE}".ssl.conf
+[[ -e /etc/apache2/sites-available/"${SITE}".conf ]] && rm /etc/apache2/sites-available/"${SITE}".conf
+[[ -e /etc/apache2/sites-available/"${SITE}".ssl.conf ]] && rm /etc/apache2/sites-available/"${SITE}".ssl.conf
+
+# and restart Apache2 Webserver
 systemctl restart apache2.service
 echo ✅ Restarted Apache2 server.
 

@@ -1,4 +1,5 @@
 #! /bin/bash
+#
 # Copyright (c) 2022 Bego Mario Garde
 # License: MIT
 #
@@ -6,7 +7,7 @@
 # in a local test environment.
 #
 # ----
-# DON`T USE ON PUBLIC SERVER!
+# DON`T USE ON THIS ON A PRODUCTION SERVER!
 # ----
 #
 # Checks if run by user root,
@@ -22,9 +23,9 @@
 set -e
 
 # Variables
-SITE=${1,,} # wp.test
-NAME=${SITE%.*} # wp
-DIR=/var/www/"${SITE}" # /var/wp/wp.test
+SITE=${1,,}                # wp.test
+NAME=${SITE%.*}            # wp
+DIR=/var/www/"${SITE}"     # /var/wp/wp.test
 WWWP="sudo -u www-data wp" # sudo -u www-data wp
 
 # Use database `wordpress` for `wp.test`
@@ -38,14 +39,14 @@ fi
 
 # Execute as root, only
 if [[ "$(whoami)" != 'root' ]]; then
-echo "You have to execute this script as root user. Aborting script."
-exit 1;
+  echo "❌ You have to execute this script as root user. Aborting script."
+  exit 1
 fi
 
 # Exit, if no site name was provided
-if [[ -z "$1" ]] ; then
-	echo 'No sitename provided. Aborting script.'
-	exit 1
+if [[ -z "$1" ]]; then
+  echo "❌ No sitename provided. Aborting script."
+  exit 1
 fi
 
 # Exit, if directory already exists
@@ -64,8 +65,8 @@ echo "Successfully created directory ${DIR}"
 # Create selfsigned SSL certificate
 mkcert \
   -cert-file /etc/ssl/certs/"${SITE}".pem \
- -key-file /etc/ssl/private/"${SITE}".key \
- "${SITE}" "*.${SITE}"
+  -key-file /etc/ssl/private/"${SITE}".key \
+  "${SITE}" "*.${SITE}"
 
 # Create virtual hosts and restart server
 echo "<VirtualHost *:80>
@@ -75,7 +76,7 @@ echo "<VirtualHost *:80>
     RewriteEngine On
     RewriteRule ^(.*)$ https://%{HTTP_HOST}\$1 [R=301,L]
     DocumentRoot ${DIR}
-</VirtualHost>" > /etc/apache2/sites-available/"${SITE}".conf
+</VirtualHost>" >/etc/apache2/sites-available/"${SITE}".conf
 
 echo "<VirtualHost *:443>
     ServerAdmin wp@${SITE}
@@ -87,15 +88,16 @@ echo "<VirtualHost *:443>
     SSLCertificateKeyFile /etc/ssl/private/${SITE}.key
     ErrorLog ${APACHE_LOG_DIR}/error.log
     CustomLog ${APACHE_LOG_DIR}/access.log combined
-</VirtualHost>" > /etc/apache2/sites-available/"${SITE}".ssl.conf
+</VirtualHost>" >/etc/apache2/sites-available/"${SITE}".ssl.conf
 
 a2ensite "${SITE}"
 a2ensite "${SITE}".ssl
 
 systemctl restart apache2.service
 
-# Add domain to DNS list on pihole
-# ! Check if this is executed correctly
+# I'm using a Pihole as a local DNS server.
+# Add domain to DNS list on pihole.
+# shellcheck disable=SC2029
 ssh pi@pihole "echo 192.168.178.99 ${SITE} >> /home/pi/.pihole/custom.list"
 echo "Added ${SITE} to local DNS server, takes 15 min."
 
@@ -125,7 +127,7 @@ ExpiresByType image/png \"access plus 1 months\"
 ExpiresByType application/x-font-woff \"access plus 1 months\"
 ExpiresByType application/javascript \"access plus 1 months\"
 ExpiresByType text/css \"access plus 1 months\"
-</IfModule>" > "${DIR}"/.htaccess
+</IfModule>" >"${DIR}"/.htaccess
 
 chown www-data:www-data "${DIR}"/.htaccess
 
@@ -139,12 +141,12 @@ PHP
 
 # Create MySQL database
 if [[ $DATABASE != 'wordpress' ]]; then
-$WWWP db create
+  $WWWP db create
 fi
 
 # Install WordPress
 $WWWP core install --title="${NAME}" --url=https://"${SITE}" --admin_user=admin --admin_password=password --admin_email=wp@"${SITE}" --skip-email
-$WWWP option update permalink_structure '/%postname%'
+$WWWP option update permalink_structure "/%postname%"
 
 # Add some settings to localize
 $WWWP option update blogdescription "WordPress Testumgebung"
@@ -163,8 +165,7 @@ function main() {
     Startseite
     Blog
   )
-  for i in "${pages[@]}"
-  do
+  for i in "${pages[@]}"; do
     menuitem=$($WWWP post create \
       --post_author=admin \
       --post_titel="$i" \
@@ -175,7 +176,7 @@ function main() {
     $WWWP menu item add-post main "$menuitem"
   done
 
-  echo "Created some web pages and added them to nav menu."
+  echo Created some web pages and added them to nav menu.
 }
 main
 
@@ -197,7 +198,7 @@ $WWWP plugin install --activate "${PLUGINS}"
 
 d=$(date "+%d.%m.%Y")
 t=$(date "+%H:%M")
-echo "Website ${SITE} created on ${d} at ${t}" > created
+echo "Website ${SITE} created on ${d} at ${t}" >created
 echo "Added timestamp to WordPress installation."
 
 sudo -R chown www-data www-data "${DIR}"

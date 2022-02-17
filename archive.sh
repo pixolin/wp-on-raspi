@@ -1,4 +1,5 @@
 #! /bin/bash
+#
 # Copyright (c) 2022 Bego Mario Garde
 # License: MIT
 #
@@ -32,30 +33,26 @@
 set -e
 
 # Variables
-SITE=${1,,} # wp.test
+SITE=${1,,}            # wp.test
 DIR=/var/www/"${SITE}" # /var/wp/wp.test
 TMP="${DIR}"/.tmp
 TAR=/var/archive/"${SITE}".tar
 WWWP="sudo -u www-data wp"
 
-
 # Execute as root, only
-if [[ "$(whoami)" != 'root' ]];
-then
-echo "❌ You have to execute this script as root user. Aborting script."
-exit 1;
+if [[ "$(whoami)" != 'root' ]]; then
+  echo "❌ You have to execute this script as root user. Aborting script."
+  exit 1
 fi
 
 # Exit, if no site name was provided
-if [[ -z "$1" ]] ;
-then
-	echo '❌ No sitename provided. Aborting script.'
-	exit 1
+if [[ -z "$1" ]]; then
+  echo '❌ No sitename provided. Aborting script.'
+  exit 1
 fi
 
 # Exit, if directory already exists
-if [[ ! -d "$DIR" ]];
-then
+if [[ ! -d "$DIR" ]]; then
   echo "❌ Directory ${DIR} doesn't exist. No website? Aborting script."
   exit 1
 fi
@@ -67,8 +64,8 @@ sudo -u www-data mkdir -p "${TMP}"
 $WWWP db export "${TMP}"/wp-database.sql --dbuser=wordpress --dbpass=wordpress --path="${DIR}"
 
 # Store list of themes and plugins in tmp-folder
-$WWWP theme list --field=name --status=active --skip-update-check --path="${DIR}" > "${TMP}"/wp-theme.txt
-$WWWP plugin list --field=name --status=active --skip-update-check --path="${DIR}" > "${TMP}"/wp-plugins.txt
+$WWWP theme list --field=name --status=active --skip-update-check --path="${DIR}" >"${TMP}"/wp-theme.txt
+$WWWP plugin list --field=name --status=active --skip-update-check --path="${DIR}" >"${TMP}"/wp-plugins.txt
 
 # Create archive from files in tmp-directory
 tar -C "${TMP}" -cf "${TAR}" \
