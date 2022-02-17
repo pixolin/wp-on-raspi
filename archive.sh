@@ -36,7 +36,7 @@ SITE=${1,,} # wp.test
 DIR=/var/www/"${SITE}" # /var/wp/wp.test
 TMP="${DIR}"/.tmp
 TAR=/var/archive/"${SITE}".tar
-wwwp="sudo -u www-data wp"
+WWWP="sudo -u www-data wp"
 
 
 # Execute as root, only
@@ -64,11 +64,11 @@ fi
 sudo -u www-data mkdir -p "${TMP}"
 
 # export MySQL database and store in tmp-directory
-$wwwp db export "${TMP}"/wp-database.sql --dbuser=wordpress --dbpass=wordpress --path="${DIR}"
+$WWWP db export "${TMP}"/wp-database.sql --dbuser=wordpress --dbpass=wordpress --path="${DIR}"
 
 # Store list of themes and plugins in tmp-folder
-$wwwp theme list --field=name --status=active --skip-update-check --path="${DIR}" > "${TMP}"/wp-theme.txt
-$wwwp plugin list --field=name --status=active --skip-update-check --path="${DIR}" > "${TMP}"/wp-plugins.txt
+$WWWP theme list --field=name --status=active --skip-update-check --path="${DIR}" > "${TMP}"/wp-theme.txt
+$WWWP plugin list --field=name --status=active --skip-update-check --path="${DIR}" > "${TMP}"/wp-plugins.txt
 
 # Create archive from files in tmp-directory
 tar -C "${TMP}" -cf "${TAR}" \
