@@ -1,27 +1,31 @@
 #! /bin/bash
-: '
-Creates a new wordpress site
-in a local test environment.
+# Copyright (c) 2022 Bego Mario Garde
+# License: MIT
+#
+# Creates a new wordpress site
+# in a local test environment.
+#
+# ----
+# DON`T USE ON PUBLIC SERVER!
+# ----
+#
+# Checks if run by user root,
+# needs a site name,
+# creates subdirectory in /var/www,
+# creates SSL certificates,
+# adds virtual host file,
+# restarts server,
+# creates MySQL database,
+# downloads and installs WordPress
 
-----
-DON`T USE ON PUBLIC SERVER!
-----
-
-Checks if run by user root,
-needs a site name,
-creates subdirectory in /var/www,
-creates SSL certificates,
-adds virtual host file,
-restarts server,
-creates MySQL database,
-downloads and installs WordPress
-'
+# Exit on first error
+set -e
 
 # Variables
 SITE=${1,,} # wp.test
 NAME=${SITE%.*} # wp
-DIR=/var/www/${SITE} # /var/wp/wp.test
-wwwp="sudo -u www-data wp" # sudo -u www-data wp
+DIR=/var/www/"${SITE}" # /var/wp/wp.test
+WWWP="sudo -u www-data wp" # sudo -u www-data wp
 
 # Use database `wordpress` for `wp.test`
 # and `wp_...` for everything else.
@@ -52,16 +56,16 @@ if [[ -d "${DIR}" ]]; then
 fi
 
 # Create directory
-  mkdir -p ${DIR}
-  chown www-data:www-data ${DIR}
-  chmod 755 ${DIR}
-  echo "Successfully created directory ${DIR}"
+mkdir -p "${DIR}"
+chown www-data:www-data "${DIR}"
+chmod 755 "${DIR}"
+echo "Successfully created directory ${DIR}"
 
 # Create selfsigned SSL certificate
- mkcert \
- -cert-file /etc/ssl/certs/${SITE}.pem \
- -key-file /etc/ssl/private/${SITE}.key \
- ${SITE} "*.${SITE}"
+mkcert \
+  -cert-file /etc/ssl/certs/"${SITE}".pem \
+ -key-file /etc/ssl/private/"${SITE}".key \
+ "${SITE}" "*.${SITE}"
 
 # Create virtual hosts and restart server
 echo "<VirtualHost *:80>
@@ -71,7 +75,7 @@ echo "<VirtualHost *:80>
     RewriteEngine On
     RewriteRule ^(.*)$ https://%{HTTP_HOST}\$1 [R=301,L]
     DocumentRoot ${DIR}
-</VirtualHost>" > /etc/apache2/sites-available/${SITE}.conf
+</VirtualHost>" > /etc/apache2/sites-available/"${SITE}".conf
 
 echo "<VirtualHost *:443>
     ServerAdmin wp@${SITE}
@@ -83,19 +87,20 @@ echo "<VirtualHost *:443>
     SSLCertificateKeyFile /etc/ssl/private/${SITE}.key
     ErrorLog ${APACHE_LOG_DIR}/error.log
     CustomLog ${APACHE_LOG_DIR}/access.log combined
-</VirtualHost>" > /etc/apache2/sites-available/${SITE}.ssl.conf
+</VirtualHost>" > /etc/apache2/sites-available/"${SITE}".ssl.conf
 
-a2ensite ${SITE}
-a2ensite ${SITE}.ssl
+a2ensite "${SITE}"
+a2ensite "${SITE}".ssl
 
 systemctl restart apache2.service
 
 # Add domain to DNS list on pihole
+# ! Check if this is executed correctly
 ssh pi@pihole "echo 192.168.178.99 ${SITE} >> /home/pi/.pihole/custom.list"
 echo "Added ${SITE} to local DNS server, takes 15 min."
 
 # Install WordPress
-cd ${DIR}
+cd "${DIR}" || exit
 
 # Add rules to `.htaccess`.
 echo "<IfModule mod_deflate.c>
@@ -120,37 +125,37 @@ ExpiresByType image/png \"access plus 1 months\"
 ExpiresByType application/x-font-woff \"access plus 1 months\"
 ExpiresByType application/javascript \"access plus 1 months\"
 ExpiresByType text/css \"access plus 1 months\"
-</IfModule>" > ${DIR}/.htaccess
+</IfModule>" > "${DIR}"/.htaccess
 
-chown www-data:www-data ${DIR}/.htaccess
+chown www-data:www-data "${DIR}"/.htaccess
 
 # Download WordPress, German locale
-$wwwp core download --locale=de_DE
+$WWWP core download --locale=de_DE
 
 # Create WordPress configuration file
-$wwwp config create --dbname=${DATABASE} --dbuser=wordpress --dbpass=wordpress --extra-php <<PHP
+$WWWP config create --dbname="${DATABASE}" --dbuser=wordpress --dbpass=wordpress --extra-php <<PHP
   define( 'WP_ENVIRONMENT_TYPE', 'development' );
 PHP
 
 # Create MySQL database
 if [[ $DATABASE != 'wordpress' ]]; then
-$wwwp db create
+$WWWP db create
 fi
 
 # Install WordPress
-$wwwp core install --title=${NAME} --url=https://${SITE} --admin_user=admin --admin_password=password --admin_email=wp@${SITE} --skip-email
-$wwwp option update permalink_structure '/%postname%'
+$WWWP core install --title="${NAME}" --url=https://"${SITE}" --admin_user=admin --admin_password=password --admin_email=wp@"${SITE}" --skip-email
+$WWWP option update permalink_structure '/%postname%'
 
 # Add some settings to localize
-$wwwp option update blogdescription "WordPress Testumgebung"
-$wwwp option update timezone_string "Europe/Berlin"
-$wwwp option update date_format "j. F Y"
-$wwwp option update time_format "G:i"
-$wwwp option update permalink_structure "/%postname%/"
+$WWWP option update blogdescription "WordPress Testumgebung"
+$WWWP option update timezone_string "Europe/Berlin"
+$WWWP option update date_format "j. F Y"
+$WWWP option update time_format "G:i"
+$WWWP option update permalink_structure "/%postname%/"
 
 # Create two nav menus
-$wwwp menu create "Main"
-$wwwp menu create "Legal"
+$WWWP menu create "Main"
+$WWWP menu create "Legal"
 
 # Add pages and create nav menu items for main menu
 function main() {
@@ -160,14 +165,14 @@ function main() {
   )
   for i in "${pages[@]}"
   do
-    menuitem=$($wwwp post create \
+    menuitem=$($WWWP post create \
       --post_author=admin \
       --post_titel="$i" \
       --post_status=publish \
       --post_type=page \
       --comment_status=closed \
       --porcelain)
-    $wwwp menu item add-post main $menuitem
+    $WWWP menu item add-post main "$menuitem"
   done
 
   echo "Created some web pages and added them to nav menu."
@@ -175,9 +180,10 @@ function main() {
 main
 
 # Add imprint and create nav menu item for legal menu
-$wwwp menu item add-post legal $($wwwp post create \
+# shellcheck disable=SC2046
+$WWWP menu item add-post legal $(${WWWP} post create \
   --post_author=admin \
-  --post_title="Impressum" \
+  --post_title=\"Impressum\" \
   --post_status=publish \
   --post_type=page \
   --comment_status=closed \
@@ -186,15 +192,15 @@ $wwwp menu item add-post legal $($wwwp post create \
 echo "Create imprint page and added it to legal menu."
 
 # Install and activate some frequently use plugins.
-plugins="code-snippets customizer-search display-environment-type flying-pages"
-$wwwp plugin install --activate $plugins
+PLUGINS="code-snippets customizer-search display-environment-type flying-pages"
+$WWWP plugin install --activate "${PLUGINS}"
 
-d=`date "+%d.%m.%Y"`
-t=`date "+%H:%M"`
+d=$(date "+%d.%m.%Y")
+t=$(date "+%H:%M")
 echo "Website ${SITE} created on ${d} at ${t}" > created
 echo "Added timestamp to WordPress installation."
 
-sudo -R chown www-data www-data ${DIR}
+sudo -R chown www-data www-data "${DIR}"
 echo "Changed owner of all files to www-data:www-data."
 
 echo "That's it! Have a great day. 🌻"
