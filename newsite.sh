@@ -194,7 +194,7 @@ echo "Success: Created imprint page and added it to legal menu."
 PLUGINS="code-snippets customizer-search display-environment-type flying-pages"
 for i in ${PLUGINS};
 do
-$WWWP plugin install --activate ${i}
+$WWWP plugin install --activate "${i}"
 done
 
 d=$(date "+%d.%m.%Y")
