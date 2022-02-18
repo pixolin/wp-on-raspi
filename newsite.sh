@@ -60,7 +60,7 @@ fi
 mkdir -p "${DIR}"
 chown www-data:www-data "${DIR}"
 chmod 755 "${DIR}"
-echo "Successfully created directory ${DIR}"
+echo "Success: created directory ${DIR}"
 
 # Create selfsigned SSL certificate
 mkcert \
@@ -150,9 +150,6 @@ $WWWP option update permalink_structure "/%postname%"
 
 # Add some settings to localize
 $WWWP option update blogdescription "WordPress Testumgebung"
-$WWWP option update timezone_string "Europe/Berlin"
-$WWWP option update date_format "j. F Y"
-$WWWP option update time_format "G:i"
 $WWWP option update permalink_structure "/%postname%/"
 
 # Create two nav menus
@@ -163,6 +160,7 @@ $WWWP menu create "Legal"
 function main() {
   pages=(
     Startseite
+    Über mich
     Blog
   )
   for i in "${pages[@]}"; do
@@ -176,7 +174,7 @@ function main() {
     $WWWP menu item add-post main "$menuitem"
   done
 
-  echo Created some web pages and added them to nav menu.
+  echo "Success: Created some web pages and added them to nav menu."
 }
 main
 
@@ -190,18 +188,22 @@ $WWWP menu item add-post legal $(${WWWP} post create \
   --comment_status=closed \
   --porcelain)
 
-echo "Create imprint page and added it to legal menu."
+echo "Success: Created imprint page and added it to legal menu."
 
 # Install and activate some frequently use plugins.
 PLUGINS="code-snippets customizer-search display-environment-type flying-pages"
-$WWWP plugin install --activate "${PLUGINS}"
+for i in ${PLUGINS};
+do
+$WWWP plugin install --activate ${i}
+done
 
 d=$(date "+%d.%m.%Y")
 t=$(date "+%H:%M")
 echo "Website ${SITE} created on ${d} at ${t}" >created
-echo "Added timestamp to WordPress installation."
+echo "Success: Added timestamp to WordPress installation."
 
-sudo -R chown www-data www-data "${DIR}"
-echo "Changed owner of all files to www-data:www-data."
-
+sudo chown -R www-data:www-data "${DIR}"
+echo "Success: Changed owner of all files to www-data:www-data."
+echo ""
 echo "That's it! Have a great day. 🌻"
+echo ""
