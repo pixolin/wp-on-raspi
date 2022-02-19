@@ -166,7 +166,7 @@ function main() {
   for i in "${pages[@]}"; do
     menuitem=$($WWWP post create \
       --post_author=admin \
-      --post_titel="$i" \
+      --post_title="$i" \
       --post_status=publish \
       --post_type=page \
       --comment_status=closed \
