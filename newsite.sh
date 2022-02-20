@@ -27,6 +27,7 @@ SITE=${1,,}                # wp.test
 NAME=${SITE%.*}            # wp
 DIR=/var/www/"${SITE}"     # /var/wp/wp.test
 WWWP="sudo -u www-data wp" # sudo -u www-data wp
+PIHOLE="192.168.178.99"    # IP address Pihole
 
 # Use database `wordpress` for `wp.test`
 # and `wp_...` for everything else.
@@ -62,6 +63,12 @@ chown www-data:www-data "${DIR}"
 chmod 755 "${DIR}"
 echo "Success: created directory ${DIR}"
 
+# I'm using a Pihole as a local DNS server.
+# Add domain to DNS list on pihole.
+# shellcheck disable=SC2029
+ssh pi@pihole "echo ${PIHOLE} ${SITE} > /home/pi/.pihole/newdns"
+echo "Added ${SITE} to local DNS server, takes 10 min."
+
 # Create selfsigned SSL certificate
 mkcert \
   -cert-file /etc/ssl/certs/"${SITE}".pem \
@@ -94,12 +101,6 @@ a2ensite "${SITE}"
 a2ensite "${SITE}".ssl
 
 systemctl restart apache2.service
-
-# I'm using a Pihole as a local DNS server.
-# Add domain to DNS list on pihole.
-# shellcheck disable=SC2029
-ssh pi@pihole "echo 192.168.178.99 ${SITE} >> /home/pi/.pihole/custom.list"
-echo "Added ${SITE} to local DNS server, takes 15 min."
 
 # Install WordPress
 cd "${DIR}" || exit
