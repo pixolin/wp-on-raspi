@@ -27,10 +27,9 @@ set -e
 
 # Variables
 SITE=${1,,}            # wp.test
-DIR=/var/www/"${SITE}" # /var/wp/wp.test
-TMP="${DIR}"/.tmp
-TAR=/var/archive/"${SITE}".tar
-WWWP="sudo -u www-data wp"
+DIR="/var/www/${SITE}" # /var/wp/wp.test
+TAR="/var/archive/${SITE}.tar.gz" # /var/archive/wp.test.gz
+WWWP="sudo -u www-data wp" # sudo -u www-data wp
 
 # Execute as root, only
 if [[ "$(whoami)" != 'root' ]]; then
@@ -54,7 +53,7 @@ fi
 $WWWP db export "${DIR}"/database.sql --dbuser=wordpress --dbpass=wordpress --path="${DIR}"
 
 # Create archive from files in tmp-directory
-tar -C "${DIR}" -cfz "${TAR}" "${TMP}" \
+tar -C "${DIR}" -cfz "${TAR}" \
   database.sql \
   wp-config.php \
   .htaccess \
