@@ -107,7 +107,8 @@ cd "${DIR}" || exit
 $WWWP core download --skip-content --locale=de_DE
 
 # extract  database.sql, wp-config.php, .htaccess, wp-content
-tar -zxf "${TAR}"
+tar -zxf "${TAR}" -C "${DIR}"
+chown -R www-data:www-data "${DIR}"
 
 # import sql file and remove afterwards
 ${WWWP} db import "${DIR}/database.sql" && rm "${DIR}/database.sql"
