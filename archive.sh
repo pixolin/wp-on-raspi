@@ -61,4 +61,4 @@ tar -C "${DIR}" -cfz "${TAR}" \
 
 rm "${DIR}"/database.sql
 
-echo "✅ Compressed archive stored at /var/archive/${SITE}.gz"
+echo "✅ Compressed archive stored at ${TAR}"
