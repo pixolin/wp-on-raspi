@@ -1,4 +1,4 @@
-i#! /bin/bash
+#! /bin/bash
 #
 # Copyright (c) 2022 Bego Mario Garde
 # License: MIT
@@ -26,10 +26,10 @@ i#! /bin/bash
 set -e
 
 # Variables
-SITE=${1,,}            # wp.test
-DIR=/var/www/"${SITE}" # /var/wp/wp.test
-TAR=/var/archive/"${SITE}".tar
-WWWP="sudo -u www-data wp"
+SITE=${1,,}                       # wp.test
+DIR=/var/www/"${SITE}"            # /var/wp/wp.test
+TAR=/var/archive/"${SITE}".tar.gz # /var/archive/wp.test.tar.gz
+WWWP="sudo -u www-data wp"        # sudo -u www-data wp
 
 # Execute as root, only
 if [[ "$(whoami)" != 'root' ]]; then
@@ -44,15 +44,14 @@ if [[ -z "$1" ]]; then
 fi
 
 # Exit, if directory already exists
-if [[ -d "$DIR" ]]; then
+if [[ -d "${DIR}" ]]; then
   echo "❌ Directory ${DIR} already exist. Aborting script."
   exit 1
 fi
 
 # Exit, if directory already exists
-if [[ -d "${DIR}" ]]; then
-  # Take action if $DIR exists. #
-  echo "Directory ${DIR} already exist. Aborting script."
+if [[ ! -f "${TAR}" ]]; then
+  echo "❌ Archive ${TAR##*/} not found. Aborting script."
   exit 1
 fi
 
@@ -61,6 +60,12 @@ mkdir -p "${DIR}"
 chown www-data:www-data "${DIR}"
 chmod 755 "${DIR}"
 echo "Success: created directory ${DIR}"
+
+# I'm using a Pihole as a local DNS server.
+# Add domain to DNS list on pihole.
+# shellcheck disable=SC2029
+ssh pi@pihole "echo 192.168.178.99 ${SITE} > /home/pi/.pihole/newdns"
+echo "Added ${SITE} to local DNS server, change needs 10 minutes."
 
 # Create selfsigned SSL certificate
 mkcert \
@@ -95,41 +100,18 @@ a2ensite "${SITE}".ssl
 
 systemctl restart apache2.service
 
-# I'm using a Pihole as a local DNS server.
-# Add domain to DNS list on pihole.
-# shellcheck disable=SC2029
-ssh pi@pihole "echo 192.168.178.99 ${SITE} >> /home/pi/.pihole/custom.list"
-echo "Added ${SITE} to local DNS server, takes 15 min."
-
 # Install WordPress
 cd "${DIR}" || exit
 
-# Add rules to `.htaccess`.
-echo "<IfModule mod_deflate.c>
-  # compress text, html, javascript, css, xml:
-  AddOutputFilterByType DEFLATE text/plain
-  AddOutputFilterByType DEFLATE text/html
-  AddOutputFilterByType DEFLATE text/xml
-  AddOutputFilterByType DEFLATE text/css
-  AddOutputFilterByType DEFLATE application/xml
-  AddOutputFilterByType DEFLATE application/xhtml+xml
-  AddOutputFilterByType DEFLATE application/rss+xml
-  AddOutputFilterByType DEFLATE application/javascript
-  AddOutputFilterByType DEFLATE application/x-javascript
-  AddOutputFilterByType DEFLATE image/x-icon
-</IfModule>
+# Download WordPress, skipping wp-content, German locale
+$WWWP core download --skip-content --locale=de_DE
 
-<IfModule mod_expires.c>
-ExpiresActive on
-ExpiresByType image/gif \"access plus 1 months\"
-ExpiresByType image/jpeg \"access plus 1 months\"
-ExpiresByType image/png \"access plus 1 months\"
-ExpiresByType application/x-font-woff \"access plus 1 months\"
-ExpiresByType application/javascript \"access plus 1 months\"
-ExpiresByType text/css \"access plus 1 months\"
-</IfModule>" >"${DIR}"/.htaccess
+# extract  database.sql, wp-config.php, .htaccess, wp-content
+tar -zxf "${TAR}"
 
-chown www-data:www-data "${DIR}"/.htaccess
+# import sql file and remove afterwards
+${WWWP} db import "${DIR}/database.sql" && rm "${DIR}/database.sql"
 
-# Download WordPress, German locale
-$WWWP core download --locale=de_DE
+echo ""
+echo "✅ Archive ${TAR##*/} has been restored successfully."
+echo ""
