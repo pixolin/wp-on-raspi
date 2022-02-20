@@ -55,9 +55,11 @@ $WWWP db export "${DIR}"/database.sql --dbuser=wordpress --dbpass=wordpress --pa
 
 # Create archive from files in tmp-directory
 tar -C "${DIR}" -cfz "${TAR}" "${TMP}" \
-  wp-database.sql \
+  database.sql \
   wp-config.php \
   .htaccess \
   wp-content
+
+rm "${DIR}"/database.sql
 
 echo "✅ Compressed archive stored at /var/archive/${SITE}.gz"
