@@ -26,10 +26,10 @@
 set -e
 
 # Variables
-SITE=${1,,}            # wp.test
-DIR="/var/www/${SITE}" # /var/wp/wp.test
+SITE=${1,,}                       # wp.test
+DIR="/var/www/${SITE}"            # /var/wp/wp.test
 TAR="/var/archive/${SITE}.tar.gz" # /var/archive/wp.test.gz
-WWWP="sudo -u www-data wp" # sudo -u www-data wp
+WWWP="sudo -u www-data wp"        # sudo -u www-data wp
 
 # Execute as root, only
 if [[ "$(whoami)" != 'root' ]]; then
