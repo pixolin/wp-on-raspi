@@ -67,7 +67,7 @@ echo "Success: created directory ${DIR}"
 # Add domain to DNS list on pihole.
 # shellcheck disable=SC2029
 ssh pi@pihole "echo ${PIHOLE} ${SITE} > /home/pi/.pihole/newdns"
-echo "Added ${SITE} to local DNS server, takes 10 min."
+echo "Added ${SITE} to local DNS server, change needs 10 minutes."
 
 # Create selfsigned SSL certificate
 mkcert \
@@ -193,9 +193,8 @@ echo "Success: Created imprint page and added it to legal menu."
 
 # Install and activate some frequently use plugins.
 PLUGINS="code-snippets customizer-search display-environment-type flying-pages"
-for i in ${PLUGINS};
-do
-$WWWP plugin install --activate "${i}"
+for i in ${PLUGINS}; do
+  $WWWP plugin install --activate "${i}"
 done
 
 d=$(date "+%d.%m.%Y")
@@ -203,8 +202,9 @@ t=$(date "+%H:%M")
 echo "Website ${SITE} created on ${d} at ${t}" >created
 echo "Success: Added timestamp to WordPress installation."
 
-sudo chown -R www-data:www-data "${DIR}"
+chown -R www-data:www-data "${DIR}"
 echo "Success: Changed owner of all files to www-data:www-data."
+
 echo ""
 echo "That's it! Have a great day. 🌻"
 echo ""
