@@ -53,7 +53,7 @@ fi
 $WWWP db export "${DIR}"/database.sql --dbuser=wordpress --dbpass=wordpress --path="${DIR}"
 
 # Create archive from files in tmp-directory
-tar -C "${DIR}" -cfz "${TAR}" \
+tar -czf "${TAR}" -C "${DIR}" \
   database.sql \
   wp-config.php \
   .htaccess \

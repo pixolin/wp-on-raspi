@@ -183,7 +183,7 @@ main
 # shellcheck disable=SC2046
 $WWWP menu item add-post legal $(${WWWP} post create \
   --post_author=admin \
-  --post_title=\"Impressum\" \
+  --post_title=Impressum \
   --post_status=publish \
   --post_type=page \
   --comment_status=closed \
