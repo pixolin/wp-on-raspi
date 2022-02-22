@@ -1,0 +1,7 @@
+# ToDo
+
+`archive.sh`
+append archive date to time stamp and store in archive file
+
+`restore.sh`
+restore time stamp and append restore date

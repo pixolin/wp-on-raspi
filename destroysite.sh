@@ -2,9 +2,13 @@
 #
 # Copyright (c) 2022 Bego Mario Garde
 # License: MIT
+#
 # ----
+# ! DON`T USE ON THIS ON A PRODUCTION SERVER !
+# ----
+#
 # Destroys an existing WordPress site.
-# ----
+#
 # Needs a site name,
 # deletes subdirectory in /var/www,
 # deletes SSL certificates,

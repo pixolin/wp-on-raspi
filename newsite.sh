@@ -7,7 +7,7 @@
 # in a local test environment.
 #
 # ----
-# DON`T USE ON THIS ON A PRODUCTION SERVER!
+# ! DON`T USE ON THIS ON A PRODUCTION SERVER !
 # ----
 #
 # Checks if run by user root,
