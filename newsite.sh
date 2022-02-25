@@ -10,8 +10,7 @@
 # ! DON`T USE ON THIS ON A PRODUCTION SERVER !
 # ----
 #
-# Checks if run by user root,
-# needs a site name,
+# Needs a site name,
 # creates subdirectory in /var/www,
 # creates SSL certificates,
 # adds virtual host file,
@@ -23,11 +22,18 @@
 set -e
 
 # Variables
-SITE=${1,,}                # wp.test
-NAME=${SITE%.*}            # wp
-DIR=/var/www/"${SITE}"     # /var/wp/wp.test
-WWWP="sudo -u www-data wp" # sudo -u www-data wp
-PIHOLE="192.168.178.99"    # IP address Pihole
+SITE=${1,,} # wp.test
+# make sure, domain ends with '.test'
+if [[ ! 'test' == "${SITE##*.}" ]]; then
+  if [[ ! "${SITE}" == *\. ]]; then
+    SITE+="."
+  fi
+  SITE+="test"
+fi
+
+NAME=${SITE%.*}          # wp
+DIR=/var/www/"${SITE}"   # /var/wp/wp.test
+RASPIIP="192.168.178.99" # IP address Pihole
 
 # Use database `wordpress` for `wp.test`
 # and `wp_...` for everything else.
@@ -36,12 +42,6 @@ if [[ "$SITE" == 'wp.test' ]]; then
   DATABASE='wordpress'
 else
   DATABASE="wp_${NAME}"
-fi
-
-# Execute as root, only
-if [[ "$(whoami)" != 'root' ]]; then
-  echo "❌ You have to execute this script as root user. Aborting script."
-  exit 1
 fi
 
 # Exit, if no site name was provided
@@ -58,19 +58,19 @@ if [[ -d "${DIR}" ]]; then
 fi
 
 # Create directory
-mkdir -p "${DIR}"
-chown www-data:www-data "${DIR}"
+sudo mkdir -p "${DIR}"
+chown pi:pi "${DIR}"
 chmod 755 "${DIR}"
 echo "Success: created directory ${DIR}"
 
 # I'm using a Pihole as a local DNS server.
 # Add domain to DNS list on pihole.
 # shellcheck disable=SC2029
-ssh pi@pihole "echo ${PIHOLE} ${SITE} > /home/pi/.pihole/newdns"
+ssh pi@pihole "echo ${RASPIIP} ${SITE} > /home/pi/.pihole/newdns"
 echo "Added ${SITE} to local DNS server, change needs 10 minutes."
 
 # Create selfsigned SSL certificate
-mkcert \
+sudo mkcert \
   -cert-file /etc/ssl/certs/"${SITE}".pem \
   -key-file /etc/ssl/private/"${SITE}".key \
   "${SITE}" "*.${SITE}"
@@ -83,7 +83,7 @@ echo "<VirtualHost *:80>
     RewriteEngine On
     RewriteRule ^(.*)$ https://%{HTTP_HOST}\$1 [R=301,L]
     DocumentRoot ${DIR}
-</VirtualHost>" >/etc/apache2/sites-available/"${SITE}".conf
+</VirtualHost>" | sudo tee -a /etc/apache2/sites-available/"${SITE}".conf >/dev/null
 
 echo "<VirtualHost *:443>
     ServerAdmin wp@${SITE}
@@ -95,12 +95,12 @@ echo "<VirtualHost *:443>
     SSLCertificateKeyFile /etc/ssl/private/${SITE}.key
     ErrorLog ${APACHE_LOG_DIR}/error.log
     CustomLog ${APACHE_LOG_DIR}/access.log combined
-</VirtualHost>" >/etc/apache2/sites-available/"${SITE}".ssl.conf
+</VirtualHost>" | sudo tee -a /etc/apache2/sites-available/"${SITE}".ssl.conf >/dev/null
 
-a2ensite "${SITE}"
-a2ensite "${SITE}".ssl
+sudo a2ensite "${SITE}"
+sudo a2ensite "${SITE}".ssl
 
-systemctl restart apache2.service
+sudo systemctl restart apache2.service
 
 # Install WordPress
 cd "${DIR}" || exit
@@ -130,32 +130,30 @@ ExpiresByType application/javascript \"access plus 1 months\"
 ExpiresByType text/css \"access plus 1 months\"
 </IfModule>" >"${DIR}"/.htaccess
 
-chown www-data:www-data "${DIR}"/.htaccess
-
 # Download WordPress, German locale
-$WWWP core download --locale=de_DE
+wp core download --locale=de_DE
 
 # Create WordPress configuration file
-$WWWP config create --dbname="${DATABASE}" --dbuser=wordpress --dbpass=wordpress --extra-php <<PHP
+wp config create --dbname="${DATABASE}" --dbuser=wordpress --dbpass=wordpress --extra-php <<PHP
   define( 'WP_ENVIRONMENT_TYPE', 'development' );
 PHP
 
 # Create MySQL database
 if [[ $DATABASE != 'wordpress' ]]; then
-  $WWWP db create
+  wp db create
 fi
 
 # Install WordPress
-$WWWP core install --title="${NAME}" --url=https://"${SITE}" --admin_user=admin --admin_password=password --admin_email=wp@"${SITE}" --skip-email
-$WWWP option update permalink_structure "/%postname%"
+wp core install --title="${NAME}" --url=https://"${SITE}" --admin_user=admin --admin_password=password --admin_email=wp@"${SITE}" --skip-email
+wp option update permalink_structure "/%postname%"
 
 # Add some settings to localize
-$WWWP option update blogdescription "WordPress Testumgebung"
-$WWWP option update permalink_structure "/%postname%/"
+wp option update blogdescription "WordPress Testumgebung"
+wp option update permalink_structure "/%postname%/"
 
 # Create two nav menus
-$WWWP menu create "Main"
-$WWWP menu create "Legal"
+wp menu create "Main"
+wp menu create "Legal"
 
 # Add pages and create nav menu items for main menu
 function main() {
@@ -165,14 +163,14 @@ function main() {
     Blog
   )
   for i in "${pages[@]}"; do
-    menuitem=$($WWWP post create \
+    menuitem=$(wp post create \
       --post_author=admin \
       --post_title="$i" \
       --post_status=publish \
       --post_type=page \
       --comment_status=closed \
       --porcelain)
-    $WWWP menu item add-post main "$menuitem"
+    wp menu item add-post main "$menuitem"
   done
 
   echo "Success: Created some web pages and added them to nav menu."
@@ -181,7 +179,7 @@ main
 
 # Add imprint and create nav menu item for legal menu
 # shellcheck disable=SC2046
-$WWWP menu item add-post legal $(${WWWP} post create \
+wp menu item add-post legal $(${WWWP} post create \
   --post_author=admin \
   --post_title=Impressum \
   --post_status=publish \
@@ -194,7 +192,7 @@ echo "Success: Created imprint page and added it to legal menu."
 # Install and activate some frequently use plugins.
 PLUGINS="code-snippets customizer-search display-environment-type flying-pages"
 for i in ${PLUGINS}; do
-  $WWWP plugin install --activate "${i}"
+  wp plugin install --activate "${i}"
 done
 
 d=$(date "+%d.%m.%Y")

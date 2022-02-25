@@ -9,8 +9,7 @@
 # ! DON`T USE ON THIS ON A PRODUCTION SERVER !
 # ----
 #
-# Checks if run by user root,
-# check if site name provided,
+# Check if site name provided,
 # check if directory exists,
 #
 # dump MySQL database
@@ -29,13 +28,6 @@ set -e
 SITE=${1,,}                       # wp.test
 DIR="/var/www/${SITE}"            # /var/wp/wp.test
 TAR="/var/archive/${SITE}.tar.gz" # /var/archive/wp.test.gz
-WWWP="sudo -u www-data wp"        # sudo -u www-data wp
-
-# Execute as root, only
-if [[ "$(whoami)" != 'root' ]]; then
-  echo "❌ You have to execute this script as root user. Aborting script."
-  exit 1
-fi
 
 # Exit, if no site name was provided
 if [[ -z "$1" ]]; then
@@ -50,11 +42,12 @@ if [[ ! -d "$DIR" ]]; then
 fi
 
 # export MySQL database and store in tmp-directory
-$WWWP db export "${DIR}"/database.sql --dbuser=wordpress --dbpass=wordpress --path="${DIR}"
+wp db export "${DIR}"/database.sql --dbuser=wordpress --dbpass=wordpress --path="${DIR}"
 
 # Create archive from files in tmp-directory
-tar -czf "${TAR}" -C "${DIR}" \
+sudo tar -czf "${TAR}" -C "${DIR}" \
   database.sql \
+  created \
   wp-config.php \
   .htaccess \
   wp-content
