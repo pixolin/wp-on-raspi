@@ -23,6 +23,10 @@ set -e
 SITE=${1,,} # wp.test
 DIR=/var/www/"${SITE}"
 
+GREEN='\033[32;1m'
+REGULAR='\033[0m'
+SUCCESS="${GREEN}Success $REGULAR"
+
 # Exit, if no site name was provided
 if [[ -z "$1" ]]; then
   echo "No sitename provided. Aborting script."
@@ -45,16 +49,16 @@ fi
 
 # Check if directory exists and delete the directory
 [[ -d "$DIR" ]] && rm -rf "${DIR}"
-echo "✅ Deleted directory ${SITE}"
+echo -e "${SUCCESS} Deleted directory ${SITE}"
 
 # Delete selfsigned SSL certificates
 sudo rm /etc/ssl/certs/"${SITE}".pem
 sudo rm /etc/ssl/private/"${SITE}".key
-echo ✅ Deleted SSL certificates
+echo -e "${SUCCESS} Deleted SSL certificates"
 
 # Disable virtual hosts and restart server
 sudo a2dissite "${SITE} ${SITE}.ssl"
-echo ✅ Virtual hosts disabled
+echo -e "${SUCCESS} Virtual hosts disabled"
 
 # Delete virtual hosts
 sudo rm /etc/apache2/sites-available/"${SITE}".conf
@@ -62,7 +66,7 @@ sudo rm /etc/apache2/sites-available/"${SITE}".ssl.conf
 
 # and restart Apache2 Webserver
 systemctl restart apache2.service
-echo ✅ Restarted Apache2 server.
+echo -e "${SUCCESS} Restarted Apache2 server."
 
 echo "
 🥲 Site ${SITE} has been destroyed.

@@ -29,6 +29,10 @@ SITE=${1,,}                       # wp.test
 DIR="/var/www/${SITE}"            # /var/wp/wp.test
 TAR="/var/archive/${SITE}.tar.gz" # /var/archive/wp.test.gz
 
+GREEN='\033[32;1m'
+REGULAR='\033[0m'
+SUCCESS="${GREEN}Success $REGULAR"
+
 # Exit, if no site name was provided
 if [[ -z "$1" ]]; then
   echo '❌ No sitename provided. Aborting script.'
@@ -54,4 +58,4 @@ sudo tar -czf "${TAR}" -C "${DIR}" \
 
 rm "${DIR}"/database.sql
 
-echo "✅ Compressed archive stored at ${TAR}"
+echo -e "${SUCCESS} Compressed archive stored at ${TAR}"

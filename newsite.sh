@@ -35,6 +35,10 @@ NAME=${SITE%.*}          # wp
 DIR=/var/www/"${SITE}"   # /var/wp/wp.test
 RASPIIP="192.168.178.99" # IP address Pihole
 
+GREEN='\033[32;1m'
+REGULAR='\033[0m'
+SUCCESS="${GREEN}Success $REGULAR"
+
 # Use database `wordpress` for `wp.test`
 # and `wp_...` for everything else.
 # DB user `wordpress` has permission for all.
@@ -53,7 +57,7 @@ fi
 # Exit, if directory already exists
 if [[ -d "${DIR}" ]]; then
   # Take action if $DIR exists. #
-  echo "Directory ${DIR} already exist. Aborting script."
+  echo "❌ Directory ${DIR} already exist. Aborting script."
   exit 1
 fi
 
@@ -61,13 +65,13 @@ fi
 sudo mkdir -p "${DIR}"
 chown pi:pi "${DIR}"
 chmod 755 "${DIR}"
-echo "Success: created directory ${DIR}"
+echo -e "${SUCCESS} created directory ${DIR}"
 
 # I'm using a Pihole as a local DNS server.
 # Add domain to DNS list on pihole.
 # shellcheck disable=SC2029
 ssh pi@pihole "echo ${RASPIIP} ${SITE} > /home/pi/.pihole/newdns"
-echo "Added ${SITE} to local DNS server, change needs 10 minutes."
+echo -e "${SUCCESS} Added ${SITE} to local DNS server, change needs 10 minutes."
 
 # Create selfsigned SSL certificate
 sudo mkcert \
@@ -173,7 +177,7 @@ function main() {
     wp menu item add-post main "$menuitem"
   done
 
-  echo "Success: Created some web pages and added them to nav menu."
+  echo -e "${SUCCESS} Created some web pages and added them to nav menu."
 }
 main
 
@@ -187,7 +191,7 @@ wp menu item add-post legal $(${WWWP} post create \
   --comment_status=closed \
   --porcelain)
 
-echo "Success: Created imprint page and added it to legal menu."
+echo -e "${SUCCESS}  Created imprint page and added it to legal menu."
 
 # Install and activate some frequently use plugins.
 PLUGINS="code-snippets customizer-search display-environment-type flying-pages"
@@ -198,11 +202,9 @@ done
 d=$(date "+%d.%m.%Y")
 t=$(date "+%H:%M")
 echo "Website ${SITE} created on ${d} at ${t}" >created
-echo "Success: Added timestamp to WordPress installation."
+echo -e "${SUCCESS} Added timestamp to WordPress installation."
 
 chown -R www-data:www-data "${DIR}"
-echo "Success: Changed owner of all files to www-data:www-data."
+echo -e "${SUCCESS} Changed owner of all files to www-data:www-data."
 
-echo ""
-echo "That's it! Have a great day. 🌻"
-echo ""
+echo -e "\nThat's it! Have a great day. 🌻\n"

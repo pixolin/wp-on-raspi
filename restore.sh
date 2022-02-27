@@ -28,6 +28,10 @@ DIR=/var/www/"${SITE}"            # /var/wp/wp.test
 TAR=/var/archive/"${SITE}".tar.gz # /var/archive/wp.test.tar.gz
 RASPIIP="192.168.178.99"
 
+GREEN='\033[32;1m'
+REGULAR='\033[0m'
+SUCCESS="${GREEN}Success $REGULAR"
+
 # Exit, if no site name was provided
 if [[ -z "$1" ]]; then
   echo '❌ No sitename provided. Aborting script.'
@@ -48,13 +52,13 @@ fi
 
 # Create directory
 mkdir -p "${DIR}"
-echo "Success: created directory ${DIR}"
+echo -e "${SUCCESS} created directory ${DIR}"
 
 # I'm using a Pihole as a local DNS server.
 # Add domain to DNS list on pihole.
 # shellcheck disable=SC2029
 ssh pi@pihole "echo ${RASPIIP} ${SITE} > /home/pi/.pihole/newdns"
-echo "Added ${SITE} to local DNS server, change needs 10 minutes."
+echo -e "${SUCCESS} Added ${SITE} to local DNS server, change needs 10 minutes."
 
 # Create selfsigned SSL certificate
 sudo mkcert \
@@ -107,5 +111,5 @@ t=$(date "+%H:%M")
 echo "Website ${SITE} restored on ${d} at ${t}" >>created
 
 echo ""
-echo "✅ Archive ${TAR##*/} has been restored successfully."
+echo -e "${SUCCESS} Archive ${TAR##*/} has been restored successfully."
 echo ""
