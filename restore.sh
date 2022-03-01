@@ -30,7 +30,7 @@ RASPIIP="192.168.178.99"
 
 GREEN='\033[32;1m'
 REGULAR='\033[0m'
-SUCCESS="${GREEN}Success $REGULAR"
+SUCCESS="${GREEN}Success: $REGULAR"
 
 # Exit, if no site name was provided
 if [[ -z "$1" ]]; then
