@@ -1,10 +1,7 @@
 # Raspberry Pi as WordPress test environment
 
 > :warning: **Never use this script on a publicly accessible web server!**
-> This script is intended for a local test environment only and *intentionally* uses extremely weak credentials (e.g. admin:password).
-
-All scripts must be run as root.
-wp-cli commands are executed as user `www-data:www-data`.
+> This script is intended for a local test environment only and *intentionally* uses extremely weak credentials (`admin:password` for WordPress, `root:root` for MySQL database).
 
 ---
 `newsite.sh <sitename>`
@@ -20,4 +17,4 @@ Creates an archive of an existing website, storing `wp-confi.php`, `.htaccess`, 
 
 ---
 `restore.sh``
-Restore archive created with `archive.sh` by installing WordPress and restoring the content of an archive file.
+Restore archive created with `archive.sh` by installing default WordPress and then restoring the content of an archive file.
