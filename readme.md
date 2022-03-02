@@ -16,5 +16,5 @@ Destroys an existing website by reverting the steps from `newsite.sh`.
 Creates an archive of an existing website, storing `wp-confi.php`, `.htaccess`, directory `wp-content` and a database dump.
 
 ---
-`restore.sh``
+`restore.sh`
 Restore archive created with `archive.sh` by installing default WordPress and then restoring the content of an archive file.
