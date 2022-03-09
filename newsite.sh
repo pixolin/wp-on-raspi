@@ -168,7 +168,7 @@ function main() {
   )
   for i in "${pages[@]}"; do
     menuitem=$(wp post create \
-      --post_author=admin \
+      --post_author=1 \
       --post_title="$i" \
       --post_status=publish \
       --post_type=page \
@@ -184,7 +184,7 @@ main
 # Add imprint and create nav menu item for legal menu
 # shellcheck disable=SC2046
 wp menu item add-post legal $(${WWWP} post create \
-  --post_author=admin \
+  --post_author=1 \
   --post_title=Impressum \
   --post_status=publish \
   --post_type=page \
