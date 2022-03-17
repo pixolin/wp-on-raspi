@@ -189,6 +189,8 @@ for i in "${PAGES[@]}"; do
 	fi
 done
 
+wp option update show_on_front page
+
 echo -e "${SUCCESS} Created some web pages and added them to nav menu."
 
 # Add imprint and create nav menu item for legal menu
