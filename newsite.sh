@@ -34,6 +34,7 @@ fi
 NAME=${SITE%.*}          # wp
 DIR=/var/www/"${SITE}"   # /var/wp/wp.test
 RASPIIP="192.168.178.99" # IP address Pihole
+LOREM=$(curl -N http://loripsum.net/api/3/short/prude/plaintext)
 
 GREEN='\033[32;1m'
 REGULAR='\033[0m'
@@ -192,6 +193,18 @@ wp menu item add-post legal $(${WWWP} post create \
   --porcelain)
 
 echo -e "${SUCCESS}  Created imprint page and added it to legal menu."
+
+# Create some posts with blindtext
+
+for i in (1..10);
+do
+wp post generate \
+  --count=3 \
+  --post_author=1 \
+  --post_content=${LOREM} \
+  --post_date=$(date '+%Y-%m-%d-%H-%M-%S') \
+  --post_title="Beitrag ${i}" \
+done
 
 # Install and activate some frequently use plugins.
 PLUGINS="code-snippets customizer-search display-environment-type flying-pages"
