@@ -19,7 +19,7 @@
 # downloads and installs WordPress
 
 # Exit on first error
-set -ex
+set -e
 
 # Variables
 SITE=${1,,} # wp.test
@@ -35,14 +35,14 @@ NAME=${SITE%.*}          # wp
 DIR=/var/www/"${SITE}"   # /var/wp/wp.test
 RASPIIP="192.168.178.99" # IP address Pihole
 
-declare -A user          # Array of users
+declare -A user # Array of users
 user["editor"]=Redakteur
 user["author"]=Autor
 user["contributor"]=Mitarbeiter
 user["subscriber"]=Abonnent
 
-GREEN='\033[32;1m' # Color for success message
-REGULAR='\033[0m'  # Reset to normal
+GREEN='\033[32;1m'                   # Color for success message
+REGULAR='\033[0m'                    # Reset to normal
 SUCCESS="${GREEN}Success:${REGULAR}" # Success message (beginning)
 
 # Use database `wordpress` for `wp.test`
@@ -210,13 +210,11 @@ curl -N http://loripsum.net/api/3/short/prude/plaintext | wp post generate \
 
 echo -e "${SUCCESS}  Created 3 random posts."
 
-for key in "${!user[@]}";
-do
-wp user create ${user[${key}]} ${user[${key}],,}@wp.test \
-	--role=${key} \
-	--user_pass=password
-    done
-}
+for key in "${!user[@]}"; do
+	wp user create ${user[${key}]} ${user[${key}],,}@wp.test \
+		--role=${key} \
+		--user_pass=password
+done
 
 # Install and activate plugin display-environment-type
 wp plugin install display-environment-type --activate
