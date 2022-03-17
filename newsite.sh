@@ -168,14 +168,14 @@ wp menu create "Legal"
 # Add pages and create nav menu items for main menu
 function main() {
 	pages=(
-		Startseite
-		Über mich
-		Blog
+		"Startseite"
+		"Über mich"
+		"Blog"
 	)
-	for ((i = 0; i < ${pages[@]}; i++)); do
+	for i in "${pages[@]}"; do
 		menuitem=$(wp post create \
 			--post_author=1 \
-			--post_title="${pages[${i}]}" \
+			--post_title="${i}" \
 			--post_status=publish \
 			--post_type=page \
 			--comment_status=closed \
