@@ -202,7 +202,9 @@ curl -N http://loripsum.net/api/3/short/prude/plaintext | wp post generate \
 	--post_title="Beitrag ${i}" \
 	--post_content
 
-# Install and activate some frequently use plugins.
+echo -e "${SUCCESS}  Created 3 random posts."
+
+# Install and activate some frequently used plugins.
 PLUGINS="code-snippets customizer-search display-environment-type flying-pages"
 for i in ${PLUGINS}; do
 	wp plugin install --activate "${i}"
@@ -213,7 +215,7 @@ t=$(date "+%H:%M")
 echo "Website ${SITE} created on ${d} at ${t}" >created
 echo -e "${SUCCESS} Added timestamp to WordPress installation."
 
-chown -R www-data:www-data "${DIR}"
-echo -e "${SUCCESS} Changed owner of all files to www-data:www-data."
+sudo chown -R pi:pi "${DIR}"
+echo -e "${SUCCESS} Changed owner/group of all files to pi:pi."
 
 echo -e "\nThat's it! Have a great day. 🌻\n"
