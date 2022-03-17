@@ -19,7 +19,7 @@
 # downloads and installs WordPress
 
 # Exit on first error
-set -e
+set -ex
 
 # Variables
 SITE=${1,,} # wp.test
@@ -64,14 +64,14 @@ fi
 
 # Create directory
 sudo mkdir -p "${DIR}"
-chown pi:pi "${DIR}"
-chmod 755 "${DIR}"
+sudo chown pi:pi "${DIR}"
+sudo chmod 755 "${DIR}"
 echo -e "${SUCCESS} created directory ${DIR}"
 
 # I'm using a Pihole as a local DNS server.
 # Add domain to DNS list on pihole.
 # shellcheck disable=SC2029
-ssh pi@pihole "echo ${RASPIIP} ${SITE} > /home/pi/.pihole/newdns"
+ssh pi@pihole.local "echo ${RASPIIP} ${SITE} > /home/pi/.pihole/newdns"
 echo -e "${SUCCESS} Added ${SITE} to local DNS server, change needs 10 minutes."
 
 # Create selfsigned SSL certificate
@@ -184,7 +184,7 @@ main
 
 # Add imprint and create nav menu item for legal menu
 # shellcheck disable=SC2046
-wp menu item add-post legal $(${WWWP} post create \
+wp menu item add-post legal $(wp post create \
   --post_author=1 \
   --post_title=Impressum \
   --post_status=publish \
