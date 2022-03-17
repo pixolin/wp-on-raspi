@@ -157,7 +157,7 @@ fi
 wp core install --title="${NAME}" --url=https://"${SITE}" --admin_user=admin --admin_password=password --admin_email=wp@"${SITE}" --skip-email
 wp option update permalink_structure "/%postname%"
 
-# Add some settings to localize
+# Add some site settings
 wp option update blogdescription "WordPress Testumgebung"
 wp option update permalink_structure "/%postname%/"
 
@@ -166,26 +166,30 @@ wp menu create "Main"
 wp menu create "Legal"
 
 # Add pages and create nav menu items for main menu
-function main() {
-	pages=(
-		"Startseite"
-		"Über mich"
-		"Blog"
-	)
-	for i in "${pages[@]}"; do
-		menuitem=$(wp post create \
-			--post_author=1 \
-			--post_title="${i}" \
-			--post_status=publish \
-			--post_type=page \
-			--comment_status=closed \
-			--porcelain)
-		wp menu item add-post main "$menuitem"
-	done
 
-	echo -e "${SUCCESS} Created some web pages and added them to nav menu."
-}
-main
+PAGES=(
+	"Startseite"
+	"Über mich"
+	"Blog"
+)
+for i in "${PAGES[@]}"; do
+	menuitem=$(wp post create \
+		--post_author=1 \
+		--post_title="${i}" \
+		--post_status=publish \
+		--post_type=page \
+		--comment_status=closed \
+		--porcelain)
+	wp menu item add-post main "$menuitem"
+	if [[ 'Startseite' == "${i}" ]]; then
+		wp option update page_on_front $menuitem
+	fi
+	if [[ 'Blog' == "${i}" ]]; then
+		wp option update page_for_posts $menuitem
+	fi
+done
+
+echo -e "${SUCCESS} Created some web pages and added them to nav menu."
 
 # Add imprint and create nav menu item for legal menu
 # shellcheck disable=SC2046
