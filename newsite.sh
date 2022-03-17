@@ -25,10 +25,10 @@ set -ex
 SITE=${1,,} # wp.test
 # make sure, domain ends with '.test'
 if [[ ! 'test' == "${SITE##*.}" ]]; then
-  if [[ ! "${SITE}" == *\. ]]; then
-    SITE+="."
-  fi
-  SITE+="test"
+	if [[ ! "${SITE}" == *\. ]]; then
+		SITE+="."
+	fi
+	SITE+="test"
 fi
 
 NAME=${SITE%.*}          # wp
@@ -44,22 +44,22 @@ SUCCESS="${GREEN}Success: $REGULAR"
 # and `wp_...` for everything else.
 # DB user `wordpress` has permission for all.
 if [[ "$SITE" == 'wp.test' ]]; then
-  DATABASE='wordpress'
+	DATABASE='wordpress'
 else
-  DATABASE="wp_${NAME}"
+	DATABASE="wp_${NAME}"
 fi
 
 # Exit, if no site name was provided
 if [[ -z "$1" ]]; then
-  echo "❌ No sitename provided. Aborting script."
-  exit 1
+	echo "❌ No sitename provided. Aborting script."
+	exit 1
 fi
 
 # Exit, if directory already exists
 if [[ -d "${DIR}" ]]; then
-  # Take action if $DIR exists. #
-  echo "❌ Directory ${DIR} already exist. Aborting script."
-  exit 1
+	# Take action if $DIR exists. #
+	echo "❌ Directory ${DIR} already exist. Aborting script."
+	exit 1
 fi
 
 # Create directory
@@ -76,9 +76,9 @@ echo -e "${SUCCESS} Added ${SITE} to local DNS server, change needs 10 minutes."
 
 # Create selfsigned SSL certificate
 sudo mkcert \
-  -cert-file /etc/ssl/certs/"${SITE}".pem \
-  -key-file /etc/ssl/private/"${SITE}".key \
-  "${SITE}" "*.${SITE}"
+	-cert-file /etc/ssl/certs/"${SITE}".pem \
+	-key-file /etc/ssl/private/"${SITE}".key \
+	"${SITE}" "*.${SITE}"
 
 # Create virtual hosts and restart server
 echo "<VirtualHost *:80>
@@ -145,7 +145,7 @@ PHP
 
 # Create MySQL database
 if [[ $DATABASE != 'wordpress' ]]; then
-  wp db create
+	wp db create
 fi
 
 # Install WordPress
@@ -162,54 +162,51 @@ wp menu create "Legal"
 
 # Add pages and create nav menu items for main menu
 function main() {
-  pages=(
-    Startseite
-    Über mich
-    Blog
-  )
-  for i in "${pages[@]}"; do
-    menuitem=$(wp post create \
-      --post_author=1 \
-      --post_title="$i" \
-      --post_status=publish \
-      --post_type=page \
-      --comment_status=closed \
-      --porcelain)
-    wp menu item add-post main "$menuitem"
-  done
+	pages=(
+		Startseite
+		Über mich
+		Blog
+	)
+	for i in "${pages[@]}"; do
+		menuitem=$(wp post create \
+			--post_author=1 \
+			--post_title="$i" \
+			--post_status=publish \
+			--post_type=page \
+			--comment_status=closed \
+			--porcelain)
+		wp menu item add-post main "$menuitem"
+	done
 
-  echo -e "${SUCCESS} Created some web pages and added them to nav menu."
+	echo -e "${SUCCESS} Created some web pages and added them to nav menu."
 }
 main
 
 # Add imprint and create nav menu item for legal menu
 # shellcheck disable=SC2046
 wp menu item add-post legal $(wp post create \
-  --post_author=1 \
-  --post_title=Impressum \
-  --post_status=publish \
-  --post_type=page \
-  --comment_status=closed \
-  --porcelain)
+	--post_author=1 \
+	--post_title=Impressum \
+	--post_status=publish \
+	--post_type=page \
+	--comment_status=closed \
+	--porcelain)
 
 echo -e "${SUCCESS}  Created imprint page and added it to legal menu."
 
 # Create some posts with blindtext
 
-for i in (1..10);
-do
 wp post generate \
-  --count=3 \
-  --post_author=1 \
-  --post_content=${LOREM} \
-  --post_date=$(date '+%Y-%m-%d-%H-%M-%S') \
-  --post_title="Beitrag ${i}" \
-done
+	--count=3 \
+	--post_author=1 \
+	--post_content="${LOREM}" \
+	--post_date="$(date '+%Y-%m-%d-%H-%M-%S')" \
+	--post_title="Beitrag ${i}"
 
 # Install and activate some frequently use plugins.
 PLUGINS="code-snippets customizer-search display-environment-type flying-pages"
 for i in ${PLUGINS}; do
-  wp plugin install --activate "${i}"
+	wp plugin install --activate "${i}"
 done
 
 d=$(date "+%d.%m.%Y")
