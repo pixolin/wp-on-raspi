@@ -175,7 +175,7 @@ function main() {
 	for ((i = 0; i < ${pages[@]}; i++)); do
 		menuitem=$(wp post create \
 			--post_author=1 \
-			--post_title="${pages[$i]}" \
+			--post_title="${pages[${i}]}" \
 			--post_status=publish \
 			--post_type=page \
 			--comment_status=closed \
