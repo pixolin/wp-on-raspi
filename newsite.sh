@@ -35,9 +35,15 @@ NAME=${SITE%.*}          # wp
 DIR=/var/www/"${SITE}"   # /var/wp/wp.test
 RASPIIP="192.168.178.99" # IP address Pihole
 
-GREEN='\033[32;1m'
-REGULAR='\033[0m'
-SUCCESS="${GREEN}Success: $REGULAR"
+declare -A user          # Array of users
+user["editor"]=Redakteur
+user["author"]=Autor
+user["contributor"]=Mitarbeiter
+user["subscriber"]=Abonnent
+
+GREEN='\033[32;1m' # Color for success message
+REGULAR='\033[0m'  # Reset to normal
+SUCCESS="${GREEN}Success:${REGULAR}" # Success message (beginning)
 
 # Use database `wordpress` for `wp.test`
 # and `wp_...` for everything else.
@@ -65,7 +71,7 @@ fi
 sudo mkdir -p "${DIR}"
 sudo chown pi:pi "${DIR}"
 sudo chmod 755 "${DIR}"
-echo -e "${SUCCESS} created directory ${DIR}"
+echo -e "${SUCCESS} Created directory ${DIR}"
 
 # I'm using a Pihole as a local DNS server.
 # Add domain to DNS list on pihole.
@@ -204,11 +210,16 @@ curl -N http://loripsum.net/api/3/short/prude/plaintext | wp post generate \
 
 echo -e "${SUCCESS}  Created 3 random posts."
 
-# Install and activate some frequently used plugins.
-PLUGINS="code-snippets customizer-search display-environment-type flying-pages"
-for i in ${PLUGINS}; do
-	wp plugin install --activate "${i}"
-done
+for key in "${!user[@]}";
+do
+wp user create ${user[${key}]} ${user[${key}],,}@wp.test \
+	--role=${key} \
+	--user_pass=password
+    done
+}
+
+# Install and activate plugin display-environment-type
+wp plugin install display-environment-type --activate
 
 d=$(date "+%d.%m.%Y")
 t=$(date "+%H:%M")
