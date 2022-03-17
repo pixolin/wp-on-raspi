@@ -29,22 +29,22 @@ SUCCESS="${GREEN}Success: $REGULAR"
 
 # Exit, if no site name was provided
 if [[ -z "$1" ]]; then
-  echo "No sitename provided. Aborting script."
-  exit 1
+	echo "No sitename provided. Aborting script."
+	exit 1
 fi
 
 # Check if website directory exists
 if [[ ! -d "$DIR" ]]; then
-  # Take action if $DIR exists. #
-  echo "Directory ${DIR} doesn't exist. Aborting script."
-  exit 1
+	# Take action if $DIR exists. #
+	echo "Directory ${DIR} doesn't exist. Aborting script."
+	exit 1
 fi
 
 # Delete MySQL-Database
 if [[ $SITE == 'wp.test' ]]; then
-  wp db reset --yes --path="${DIR}"
+	wp db reset --yes --path="${DIR}"
 else
-  wp db drop --yes --path="${DIR}"
+	wp db drop --yes --path="${DIR}"
 fi
 
 # Check if directory exists and delete the directory
@@ -65,7 +65,7 @@ sudo rm /etc/apache2/sites-available/"${SITE}".conf
 sudo rm /etc/apache2/sites-available/"${SITE}".ssl.conf
 
 # and restart Apache2 Webserver
-systemctl restart apache2.service
+sudo systemctl restart apache2.service
 echo -e "${SUCCESS} Restarted Apache2 server."
 
 echo "
