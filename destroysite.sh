@@ -20,8 +20,9 @@
 set -e
 
 # Variables
-SITE=${1,,} # wp.test
-DIR=/var/www/"${SITE}"
+SITE=${1,,}              # wp.test
+DIR=/var/www/"${SITE}"   # Site directory
+RASPIIP="192.168.178.99" # IP address Pihole
 
 GREEN='\033[32;1m'
 REGULAR='\033[0m'
@@ -67,6 +68,8 @@ sudo rm /etc/apache2/sites-available/"${SITE}".ssl.conf
 # and restart Apache2 Webserver
 sudo systemctl restart apache2.service
 echo -e "${SUCCESS} Restarted Apache2 server."
+
+ssh pi@pihole.local "sed -i '/${SITE}/d' /home/pi/.pihole/newdns"
 
 echo "
 🥲 Site ${SITE} has been destroyed.
