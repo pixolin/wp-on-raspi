@@ -144,9 +144,8 @@ ExpiresByType text/css \"access plus 1 months\"
 wp core download --locale=de_DE
 
 # Create WordPress configuration file
-wp config create --dbname="${DATABASE}" --dbuser=wordpress --dbpass=wordpress --extra-php <<PHP
-  define( 'WP_ENVIRONMENT_TYPE', 'development' );
-PHP
+wp config create --dbname="${DATABASE}" --dbuser=wordpress --dbpass=wordpress
+wp config set WP_ENVIRONMENT_TYPE development
 
 # Create MySQL database
 if [[ $DATABASE != 'wordpress' ]]; then
