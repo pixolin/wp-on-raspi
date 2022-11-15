@@ -206,12 +206,13 @@ echo -e "${SUCCESS}  Created imprint page and added it to legal menu."
 
 # Create some posts with blindtext
 
-curl -N http://loripsum.net/api/3/short/prude/plaintext | wp post generate \
+curl -N http://loripsum.net/api/3/short/prude/plaintext > lorem.txt && cat lorem.txt | wp post generate \
 	--count=3 \
 	--post_author=1 \
 	--post_date="$(date '+%Y-%m-%d-%H-%M-%S')" \
 	--post_title="Beitrag ${i}" \
-	--post_content
+	--post_content \
+  && rm lorem.txt
 
 echo -e "${SUCCESS}  Created 3 random posts."
 
